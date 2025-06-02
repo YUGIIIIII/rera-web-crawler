@@ -1,0 +1,18 @@
+# Python ignores
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+.env.*
+
+# Output files
+*.csv
+
+# Editor/IDE files
+.idea/
+.vscode/
+*.swp
+
+# System files
+.DS_Store
