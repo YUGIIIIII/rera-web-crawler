@@ -8,6 +8,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import csv
 from pymongo import MongoClient
+import ssl
 from dotenv import load_dotenv
 import os
 
@@ -17,22 +18,29 @@ MONGO_URI = os.getenv("DB_URI")
 DB_NAME = os.getenv("DB_NAME", "rera_db")
 COLLECTION_NAME = os.getenv("COLLECTION_NAME", "projects")
 
-# Connect to MongoDB
+# Connect to MongoDB with enhanced SSL/TLS configuration
 try:
-    client = MongoClient(MONGO_URI)
-    client.admin.command('ping')  # Simple check
+    client = MongoClient(
+        MONGO_URI,
+        tls=True,
+        tlsAllowInvalidCertificates=True,
+        connectTimeoutMS=30000,
+        socketTimeoutMS=30000,
+        serverSelectionTimeoutMS=30000
+    )
+    client.admin.command('ping')  # Test connection
     db = client[DB_NAME]
     collection = db[COLLECTION_NAME]
     print("✅ MongoDB connection successful.")
 except Exception as e:
-    print("❌ MongoDB connection failed:", e)
-    exit()
+    print(f"❌ MongoDB connection failed: {e}")
+    exit(1)  # Exit with error code if connection fails
 
 # Setup Chrome options
 options = webdriver.ChromeOptions()
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
-# options.add_argument("--headless")
+options.add_argument("--headless")  # Uncommented for production
 
 # Initialize WebDriver
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
