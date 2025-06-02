@@ -1,3 +1,0 @@
-DB_URI=mongodb+srv://yugi:MyNewPassword123@cluster0.exft7.mongodb.net/portfolio_db?retryWrites=true&w=majority&appName=Cluster0
-DB_NAME=portfolio_db
-COLLECTION_NAME=projects
