@@ -7,12 +7,32 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 import csv
+from pymongo import MongoClient
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env
+load_dotenv()
+MONGO_URI = os.getenv("DB_URI")
+DB_NAME = os.getenv("DB_NAME", "rera_db")
+COLLECTION_NAME = os.getenv("COLLECTION_NAME", "projects")
+
+# Connect to MongoDB
+try:
+    client = MongoClient(MONGO_URI)
+    client.admin.command('ping')  # Simple check
+    db = client[DB_NAME]
+    collection = db[COLLECTION_NAME]
+    print("✅ MongoDB connection successful.")
+except Exception as e:
+    print("❌ MongoDB connection failed:", e)
+    exit()
 
 # Setup Chrome options
 options = webdriver.ChromeOptions()
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
-# options.add_argument("--headless")  # Uncomment to run without opening a browser
+# options.add_argument("--headless")
 
 # Initialize WebDriver
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
@@ -44,7 +64,6 @@ try:
         )
         time.sleep(2)
 
-        # Fixed get_value function to get <strong> after <label>
         def get_value(label):
             try:
                 label_elem = driver.find_element(By.XPATH, f"//label[contains(text(), '{label}')]")
@@ -56,13 +75,11 @@ try:
                 print(f"❌ Could not extract '{label}':", e)
                 return "N/A"
 
-        print(f"\nFetching data for project: {idx+1}")
+        print(f"\nFetching data for project: {idx + 1}")
 
-        # Project Overview tab
         rera_no = get_value("RERA Regd. No.")
         project_name = get_value("Project Name")
 
-        # Switch to Promoter Details tab
         try:
             promoter_tab = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, "//a[contains(text(),'Promoter Details')]"))
@@ -82,15 +99,23 @@ try:
         print("Promoter Address:", promoter_address)
         print("GST No:", gst_no)
 
-        data.append({
+        project_data = {
             "RERA No": rera_no,
             "Project Name": project_name,
             "Promoter Name": promoter_name,
             "Promoter Address": promoter_address,
             "GST No": gst_no
-        })
+        }
 
-        # Close modal
+        data.append(project_data)
+
+        # Insert into MongoDB
+        try:
+            collection.insert_one(project_data)
+            print("✅ Inserted into MongoDB.")
+        except Exception as e:
+            print("❌ Failed to insert into MongoDB:", e)
+
         try:
             close_btn = WebDriverWait(driver, 5).until(
                 EC.element_to_be_clickable((By.XPATH, "//button[contains(@class,'close') or contains(text(),'×')]"))
@@ -105,13 +130,12 @@ try:
             EC.invisibility_of_element_located((By.CLASS_NAME, "project-details"))
         )
 
-    # Save to CSV
     if data:
         with open("odisha_rera_projects.csv", "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=data[0].keys())
             writer.writeheader()
             writer.writerows(data)
-        print("\n✅ Data saved to 'odisha_rera_projects.csv'")
+        print("\n✅ Data also saved to 'odisha_rera_projects.csv'")
     else:
         print("\n⚠️ No data extracted.")
 
