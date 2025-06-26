@@ -15,7 +15,7 @@ import os
 # Load environment variables from .env
 load_dotenv()
 MONGO_URI = os.getenv("DB_URI")
-DB_NAME = os.getenv("DB_NAME", "rera_db")
+DB_NAME = os.getenv("DB_NAME", "odisha_rera_db")
 COLLECTION_NAME = os.getenv("COLLECTION_NAME", "projects")
 
 # Connect to MongoDB with enhanced SSL/TLS configuration
