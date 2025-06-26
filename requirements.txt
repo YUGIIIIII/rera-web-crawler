@@ -2,3 +2,4 @@ selenium
 webdriver-manager
 pymongo
 python-dotenv
+Flask
