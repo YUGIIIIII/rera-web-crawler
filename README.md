@@ -156,8 +156,7 @@ https://rera-web-crawler-1.onrender.com/
 ## 📷 Screenshot
 
 ```
-![![image](https://github.com/user-attachments/assets/3d943f5a-9a3b-40bb-93be-c4d495ce3020)
-](screenshot.png)
+![Screenshot Description](screenshot.png)
 ```
 
 ## 👨‍💻 Author
